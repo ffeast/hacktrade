@@ -77,7 +77,8 @@ QUIK = {
   },
   MARKET = {
     STOCKS = "TQBR",
-    FUTS = "SPBFUT"
+    FUTS = "SPBFUT",
+    ETFS = "TQTF"
   },
   LIMIT_KIND = {
     T0 = 0,
@@ -123,7 +124,6 @@ function ServerInfo:__index(key)
       return res
     else
       if self.retry_on_empty == true then
-        log:trace('ServerInfo retrying on ' .. key)
         sleep(self.retry_delay_msec)
       else
         break
@@ -242,9 +242,11 @@ function Indicator:__index(key)
   end
   if field ~= nil and field ~= "values" then
     field = field:sub(0, -2)
+    new_data = {}
     for idx = 1, #data do
-      data[idx] = data[idx][field]
+      new_data[idx] = data[idx][field]
     end
+    data = new_data
   end
   local result = History(data)
   if extractor ~= nil then
@@ -340,7 +342,7 @@ function SmartOrder:_load_futures()
   end
   return 0
 end
-function SmartOrder:_load_stocks()
+function SmartOrder:_load_stocks_or_etfs()
   local stocks_tbl = "depo_limits"
   local stocks_cnt = getNumberOf(stocks_tbl)
   for i = 0, stocks_cnt - 1 do
@@ -356,8 +358,9 @@ function SmartOrder:load()
   local position
   if self.market == QUIK.MARKET.FUTS then
     position = self:_load_futures()
-  elseif self.market == QUIK.MARKET.STOCKS then
-    position = self:_load_stocks()
+  elseif (self.market == QUIK.MARKET.STOCKS
+            or self.market == QUIK.MARKET.ETFS) then
+    position = self:_load_stocks_or_etfs()
   else
     log:fatal("unsupported market: " .. tostring(self.market))
   end
