@@ -339,7 +339,7 @@ describe("hacktrade", function()
             TRANS_ID = tostring(order.trans_id),
             ACTION = "NEW_ORDER",
             OPERATION = "B",
-            PRICE = tostring(0.0),
+            PRICE = tostring(0),
             QUANTITY = tostring(2)
         })
       end)
